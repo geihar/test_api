@@ -4,7 +4,7 @@ from rest_framework import permissions, viewsets
 from django.db import models
 
 
-# from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly
 from .services import get_client_ip
 from ..models import Post
 from .serializers import (
@@ -16,7 +16,7 @@ from .serializers import (
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().annotate(votes=models.Count(models.F("post_like")))
+    queryset = Post.objects.all().annotate(like=models.Count(models.F("post_like")))
     serializer_class = PostCRUDlSerializer
 
     def perform_create(self, serializer):
@@ -56,6 +56,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class AddLike(generics.CreateAPIView):
+
     serializer_class = CreateLikeSerializer
     permission_classes = (permissions.IsAuthenticated,)
 

@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.response import Response
 
 from ..models import User, Post, Like
 
@@ -15,7 +16,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
 
     author = AuthorSerializer(read_only=True)
-    likes = serializers.IntegerField()
+    like = serializers.IntegerField()
 
     class Meta:
         model = Post
@@ -32,7 +33,7 @@ class PostListSerializer(serializers.ModelSerializer):
 class PostDetailSerializer(serializers.ModelSerializer):
 
     author = AuthorSerializer(read_only=True)
-    likes = serializers.IntegerField()
+    like = serializers.IntegerField()
 
     class Meta:
         model = Post
@@ -42,8 +43,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "content",
             "slug",
             "author",
-            "comment",
-            "likes",
+            "like",
         )
 
 
@@ -59,11 +59,20 @@ class PostCRUDlSerializer(serializers.ModelSerializer):
 class CreateLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ("post",)
+        fields = ("__all__")
+        read_only_fields = ("ip",)
 
     def create(self, validated_data):
-        like, _ = Like.objects.update_or_create(
-            author=validated_data.get("user", None),
-            post=validated_data.get("post", None),
+
+        like = Like.objects.filter(
+            ip=validated_data.get("ip"), post=validated_data.get("post")
         )
-        return like
+        if like:
+            post = Like.objects.get(post=self.data["post"], ip=validated_data.get("ip")).delete()
+            return post
+        else:
+            like = Like.objects.create(
+                ip=validated_data.get("ip"), post=validated_data.get("post")
+            )
+            return like
+

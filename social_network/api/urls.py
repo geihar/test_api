@@ -15,7 +15,8 @@ urlpatterns = [
             }
         ),
     ),
-    path("upvotes/", views.AddLike.as_view()),
+    path("like/", views.AddLike.as_view()),
+
 ]
 #
 #
