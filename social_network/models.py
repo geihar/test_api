@@ -1,16 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.template.defaultfilters import slugify
 
 
-
-class User(models.Model):
-    pass
+class User(AbstractUser):
+    last_visit = models.DateTimeField(auto_now_add=True)
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=120, verbose_name='Тема поста')
-    content = models.TextField(verbose_name='Тело поста')
+    title = models.CharField(max_length=120, verbose_name="Тема поста")
+    content = models.TextField(verbose_name="Тело поста")
     slug = models.SlugField()
     creation_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -21,3 +20,11 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         super(Post, self).save(*args, **kwargs)
+
+
+class Like(models.Model):
+    ip = models.GenericIPAddressField()
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_like")
+
+    def __str__(self):
+        return self.post.title
