@@ -51,7 +51,7 @@ class PostCRUDlSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ("__all__",)
+        fields = ("__all__")
         read_only_fields = ("slug",)
 
 
@@ -86,3 +86,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ("username", "email", "password")
         write_only_fields = ("password",)
+
+
+class UserActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("last_visit", "last_login", "username")
+

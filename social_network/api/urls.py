@@ -17,6 +17,7 @@ urlpatterns = [
     ),
     path("like/", views.AddLike.as_view()),
     path("signup/", views.UserCreate.as_view()),
+    path("user/<int:pk>/", views.UserLastActivity.as_view()),
 ]
 #
 #

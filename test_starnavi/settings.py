@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'social_network.middleware.SetLastVisitMiddleware',
+    'social_network.middleware.SetLastVisitMiddleware',
 ]
 
 ROOT_URLCONF = 'test_starnavi.urls'

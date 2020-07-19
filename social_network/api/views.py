@@ -12,6 +12,7 @@ from .serializers import (
     PostCRUDlSerializer,
     CreateLikeSerializer,
     UserCreateSerializer,
+    UserActivitySerializer,
 )
 
 
@@ -76,5 +77,9 @@ class UserCreate(generics.CreateAPIView):
 
 
 class UserLastActivity(generics.RetrieveAPIView):
+
+    serializer_class = UserActivitySerializer
+    queryset = User.objects.all()
+
     class Meta:
         models = User
