@@ -1,5 +1,4 @@
-from rest_framework import serializers, status
-from rest_framework.response import Response
+from rest_framework import serializers
 
 from ..models import User, Post, Like
 
@@ -52,27 +51,38 @@ class PostCRUDlSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ("__all__")
+        fields = ("__all__",)
         read_only_fields = ("slug",)
 
 
 class CreateLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ("__all__")
-        read_only_fields = ("ip",)
+        fields = (
+            "post",
+            "creation_date",
+        )
+        read_only_fields = ("user",)
 
     def create(self, validated_data):
 
         like = Like.objects.filter(
-            ip=validated_data.get("ip"), post=validated_data.get("post")
+            user=validated_data.get("user"), post=validated_data.get("post")
         )
         if like:
-            post = Like.objects.get(post=self.data["post"], ip=validated_data.get("ip")).delete()
+            post = Like.objects.get(
+                post=self.data["post"], user=validated_data.get("user")
+            ).delete()
             return post
         else:
             like = Like.objects.create(
-                ip=validated_data.get("ip"), post=validated_data.get("post")
+                user=validated_data.get("user"), post=validated_data.get("post")
             )
             return like
 
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "email", "password")
+        write_only_fields = ("password",)

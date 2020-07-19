@@ -2,16 +2,16 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets
 from django.db import models
-
+from django.contrib.auth.hashers import make_password
 
 from .permissions import IsOwnerOrReadOnly
-from .services import get_client_ip
-from ..models import Post
+from ..models import Post, User
 from .serializers import (
     PostListSerializer,
     PostDetailSerializer,
     PostCRUDlSerializer,
     CreateLikeSerializer,
+    UserCreateSerializer,
 )
 
 
@@ -32,27 +32,27 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = PostDetailSerializer(instance)
         return Response(serializer.data)
 
-    # def get_permissions(self):
-    #     if self.action in ["create"]:
-    #         self.permission_classes = [
-    #             permissions.IsAuthenticated,
-    #         ]
-    #     elif self.action in [
-    #         "update",
-    #         "partial_update",
-    #     ]:
-    #         self.permission_classes = [
-    #             IsOwnerOrReadOnly,
-    #         ]
-    #     elif self.action in ["destroy"]:
-    #         self.permission_classes = [
-    #             permissions.IsAdminUser,
-    #         ]
-    #     else:
-    #         self.permission_classes = [
-    #             permissions.AllowAny,
-    #         ]
-    #     return super(self.__class__, self).get_permissions()
+    def get_permissions(self):
+        if self.action in ["create"]:
+            self.permission_classes = [
+                permissions.IsAuthenticated,
+            ]
+        elif self.action in [
+            "update",
+            "partial_update",
+        ]:
+            self.permission_classes = [
+                IsOwnerOrReadOnly,
+            ]
+        elif self.action in ["destroy"]:
+            self.permission_classes = [
+                permissions.IsAdminUser,
+            ]
+        else:
+            self.permission_classes = [
+                permissions.AllowAny,
+            ]
+        return super(self.__class__, self).get_permissions()
 
 
 class AddLike(generics.CreateAPIView):
@@ -61,4 +61,20 @@ class AddLike(generics.CreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def perform_create(self, serializer):
-        serializer.save(ip=get_client_ip(self.request))
+        serializer.save(user=self.request.user)
+
+
+class UserCreate(generics.CreateAPIView):
+
+    serializer_class = UserCreateSerializer
+
+    def perform_create(self, serializer):
+        serializer.validated_data["password"] = make_password(
+            serializer.validated_data["password"]
+        )
+        serializer.save()
+
+
+class UserLastActivity(generics.RetrieveAPIView):
+    class Meta:
+        models = User
