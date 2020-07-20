@@ -1,11 +1,11 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework import permissions, viewsets
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
 from .permissions import IsOwnerOrReadOnly
-from ..models import Post, User
+from ..models import Post, User, Like
 from .serializers import (
     PostListSerializer,
     PostDetailSerializer,
@@ -13,6 +13,7 @@ from .serializers import (
     CreateLikeSerializer,
     UserCreateSerializer,
     UserActivitySerializer,
+    AnalyticSerializer,
 )
 
 
@@ -75,6 +76,13 @@ class UserCreate(generics.CreateAPIView):
         )
         serializer.save()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(status=status.HTTP_201_CREATED, headers=headers)
+
 
 class UserLastActivity(generics.RetrieveAPIView):
 
@@ -83,3 +91,19 @@ class UserLastActivity(generics.RetrieveAPIView):
 
     class Meta:
         models = User
+
+
+class AnalyticView(generics.ListAPIView):
+
+    serializer_class = AnalyticSerializer
+
+    def get_queryset(self):
+        queryset = (
+            Like.objects.filter(
+                creation_date__gte=self.request.GET.getlist("date_from")[0],
+                creation_date__lte=self.request.GET.getlist("date_to")[0],
+            )
+            .values("creation_date")
+            .annotate(total_likes=models.Count("id"))
+        )
+        return queryset

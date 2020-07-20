@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.response import Response
 
 from ..models import User, Post, Like
 
@@ -93,3 +94,15 @@ class UserActivitySerializer(serializers.ModelSerializer):
         model = User
         fields = ("last_visit", "last_login", "username")
 
+
+class AnalyticSerializer(serializers.ModelSerializer):
+
+    total_likes = serializers.IntegerField()
+
+    class Meta:
+        model = Like
+        fields = (
+            "creation_date",
+            "total_likes",
+        )
+        read_only_fields = ("user",)
