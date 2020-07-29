@@ -69,8 +69,13 @@ class UserViewTests(APITestCase):
             data=json.dumps(self.valid_data),
             content_type="application/json",
         )
+        new_obj = Post.objects.get(title="My post")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(new_obj.title, "My post")
+        self.assertEqual(new_obj.content, "content")
+        self.assertEqual(new_obj.author.id, self.admin.id)
+        self.assertIsNotNone(new_obj.creation_date)
 
     def test_create_invalid_post(self):
         self.invalid_data = {"title": "My post", "author": self.admin.id}
